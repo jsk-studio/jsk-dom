@@ -8,6 +8,8 @@ export function getInputFile(opts?: HTMLInputElement) {
             uploader.remove()
             uploader = null
         }
+        const id = opts?.id || 'jsk-file'
+        document.getElementById(id)?.remove()
         
         uploader = document.createElement('input')
         xTransfer(uploader, opts)

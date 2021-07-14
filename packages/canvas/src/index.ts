@@ -54,7 +54,7 @@ export function getImageContext(cvs: HTMLCanvasElement, img: HTMLImageElement) {
     const getCoverPoint = (point: number[]) => {
         const [rw, rh] = imgCoverRate
         const r = Math.max(rw, rh)
-        return [point[0] * r, point[1] * r]
+        return [(point[0] - imgCover.sx) * r, (point[1] - imgCover.sy) * r]
     }
     const contentBox = {
         rect: box,

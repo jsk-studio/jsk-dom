@@ -1,0 +1,37 @@
+{
+  "name": "@jsk-dom/media",
+  "version": "0.0.1",
+  "description": "",
+  "main": "lib/index.js",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lynnkoo/browser-basic-kit.git"
+  },
+  "keywords": [
+    "dom kits"
+  ],
+  "author": "lynnkoo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lynnkoo/browser-basic-kit/issues"
+  },
+  "homepage": "https://github.com/lynnkoo/browser-basic-kit#readme",
+  "devDependencies": {
+    "tslib": "^2.3.0",
+    "typescript": "^3.2.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "f12b8bd6d88f9f211723965110f37be5cb72617d",
+  "peerDependencies": {
+    "@jsk-std/x": "^0.0.2"
+  },
+  "dependencies": {
+    "@jsk-std/x": "^0.0.2"
+  }
+}
