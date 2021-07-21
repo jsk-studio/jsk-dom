@@ -1,60 +1,127 @@
-import { xArray, xTransfer } from "@jsk-std/x"
+import { xArray, xTransfer, xTypeOf } from "@jsk-std/x"
 import { hiddenElement } from './utils'
 
 type IAudioElementExtend = {
-    stop?: () => void
+    stop?: () => void,
+    onplayerror?: (e: any) => void,
 }
 
 let audioPlayer: HTMLAudioElement & IAudioElementExtend | null = null
+let prepreload = false
+
+function createMockEvent(name: string, opts?: any) {
+    let mockEvent: undefined | CustomEvent | Event
+    mockEvent = window.CustomEvent && new window.CustomEvent(name)
+    if (!mockEvent) {
+        mockEvent = document.createEvent && document.createEvent('Event');
+        mockEvent.initEvent('ended', true, true)
+    }
+    return mockEvent
+}
 
 function stopPlayer() {
-    let MockMediaEnded: undefined | CustomEvent | Event
-    MockMediaEnded = window.CustomEvent && new window.CustomEvent('ended')
-    if (!MockMediaEnded) {
-        MockMediaEnded = document.createEvent && document.createEvent('Event');
-        MockMediaEnded.initEvent('ended', true, true)
-    }
+    const mockMediaEnd = createMockEvent('ended')
     if (audioPlayer && !audioPlayer.ended) {
-        if (MockMediaEnded) {
-            audioPlayer.dispatchEvent(MockMediaEnded)
-        } else if (audioPlayer.duration) {
-            audioPlayer.currentTime = audioPlayer.duration
+        if (audioPlayer.onended) {
+            audioPlayer.onended(mockMediaEnd)
+        } else {
+            audioPlayer.dispatchEvent(mockMediaEnd)
         }
-        if (audioPlayer) {
-            audioPlayer.remove()
-        }
+    }
+    if (audioPlayer) {
+        audioPlayer.pause()
+        audioPlayer.currentTime = 0.0
         audioPlayer = null
     }
 }
 
-export function playAudioUrl(url: string | string[], opts ?: HTMLAudioElement) {
+type IReturnUrls = string | string[]
+type IPlayUrls = IReturnUrls | (() => IReturnUrls) | (() => Promise<IReturnUrls> )
+
+async function getUrls(url: IPlayUrls) {
+    if (typeof url !== 'function') {
+        return url
+    }
+    await preplayAudio()
+    const urls = url()
+    if (xTypeOf(urls, 'promise')) {
+        return await urls
+    }
+    return urls
+}
+
+export async function playAudioUrl(url: IPlayUrls, opts ?: HTMLAudioElement) {
+    const urls = await getUrls(url)
     if (audioPlayer) {
         audioPlayer.stop!()
-        audioPlayer = null
     }
-    const id = opts?.id || 'jsk-audio'
-    document.getElementById(id)?.remove()
-
-    audioPlayer = document.createElement('audio')
-    audioPlayer.preload = 'auto'
-    audioPlayer.controls = false
-    audioPlayer.id = id
-
-    for (const src of xArray(url)) {
+    presetAudioPlayer(opts)
+    if (!audioPlayer) {
+        return
+    }
+    for (let i = 0; i < audioPlayer.children.length; i++) {
+        const child = audioPlayer.children.item(i)!
+        audioPlayer.removeChild(child)
+    }
+    for (const src of xArray(urls)) {
         const ms = document.createElement('source')
         ms.src = src
         ms.type = 'audio/mpeg'
-        audioPlayer.append(ms)
+        audioPlayer!.append(ms)
     }
-    xTransfer(audioPlayer, opts)
-    hiddenElement(audioPlayer)
-    document.body.appendChild(audioPlayer)
-    audioPlayer.play()
-    audioPlayer.constructor.prototype.stop = stopPlayer
+    audioPlayer.load()
+    audioPlayer.pause()
+    audioPlayer?.play()
+        .catch(e => {
+            if (audioPlayer && audioPlayer.onplayerror) {
+                audioPlayer.onplayerror(e)
+            } else if (audioPlayer) {
+                const mockPlayerror = createMockEvent('playerror')
+                audioPlayer.dispatchEvent(mockPlayerror)
+            }
+        })
+
     return audioPlayer
 }
 
 export function getAudioPlayer() {
     return audioPlayer
+}
+
+export function preplayAudio() {
+    return new Promise((resolve) => {
+        if (audioPlayer && !prepreload) {
+            audioPlayer.play()
+                .then(resolve)
+                .catch(resolve)
+
+            audioPlayer.pause()
+            audioPlayer.onerror = resolve
+            audioPlayer.onabort = resolve
+            prepreload = true
+        }
+        resolve(1)
+    })
+}
+
+export function presetAudioPlayer(opts ?: HTMLAudioElement) {
+    const id = opts?.id || 'jsk-audio'
+    audioPlayer = document.getElementById(id) as HTMLAudioElement
+    if (audioPlayer) {
+        xTransfer(audioPlayer, opts)
+        return
+    }
+    audioPlayer = document.createElement('audio')
+    audioPlayer.controls = false
+    audioPlayer.preload = 'auto'
+    audioPlayer.id = id
+    xTransfer(audioPlayer, opts)
+    hiddenElement(audioPlayer)
+    audioPlayer.constructor.prototype.stop = stopPlayer
+    document.body.appendChild(audioPlayer)
+
+    const ms = document.createElement('source')
+    ms.type = 'audio/mpeg'
+    audioPlayer!.append(ms)
 }
 
