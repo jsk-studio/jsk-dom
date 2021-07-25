@@ -104,8 +104,11 @@ export function preplayAudio() {
     })
 }
 
-export function presetAudioPlayer(opts ?: HTMLAudioElement) {
-    const id = opts?.id || 'jsk-audio'
+export type IPresetOptions = HTMLAudioElement & { autopause?: boolean }
+
+export function presetAudioPlayer(options ?: IPresetOptions) {
+    const { autopause, ...opts } = options || {} as IPresetOptions
+    const id = opts.id || 'jsk-audio'
     audioPlayer = document.getElementById(id) as HTMLAudioElement
     if (audioPlayer) {
         xTransfer(audioPlayer, opts)
@@ -123,5 +126,11 @@ export function presetAudioPlayer(opts ?: HTMLAudioElement) {
     const ms = document.createElement('source')
     ms.type = 'audio/mpeg'
     audioPlayer!.append(ms)
+
+    if (autopause) {
+         document.addEventListener('visibilitychange', () => {
+            audioPlayer?.stop!()
+        })
+    }
 }
 
