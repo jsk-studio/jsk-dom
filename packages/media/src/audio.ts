@@ -1,4 +1,4 @@
-import { xArray, xTransfer, xTypeOf } from "@jsk-std/x"
+import { xArray, xTypeOf } from "@jsk-std/x"
 import { hiddenElement } from './utils'
 
 type IAudioElementExtend = {
@@ -111,14 +111,14 @@ export function presetAudioPlayer(options ?: IPresetOptions) {
     const id = opts.id || 'jsk-audio'
     audioPlayer = document.getElementById(id) as HTMLAudioElement
     if (audioPlayer) {
-        xTransfer(audioPlayer, opts)
+        Object.assign(audioPlayer, opts)
         return
     }
     audioPlayer = document.createElement('audio')
     audioPlayer.controls = false
     audioPlayer.preload = 'auto'
     audioPlayer.id = id
-    xTransfer(audioPlayer, opts)
+    Object.assign(audioPlayer, opts)
     hiddenElement(audioPlayer)
     audioPlayer.constructor.prototype.stop = stopPlayer
     document.body.appendChild(audioPlayer)

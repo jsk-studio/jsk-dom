@@ -1,5 +1,3 @@
-import { xTransfer } from "@jsk-std/x"
-
 export async function fetchToObjectURL(url: string, opts?: RequestInit) {
     const resp = await fetch(url, opts)
     return URL.createObjectURL(resp.blob())
@@ -31,7 +29,7 @@ type IRequestScriptOptions = HTMLScriptElement & { timeout: number, preload: boo
 export async function requestScript(url: string, opts ?: IRequestScriptOptions): Promise<HTMLScriptElement> {
     const { timeout, preload = false, ...reqOpts } = opts || {} as IRequestScriptOptions
     const script = document.createElement('script');
-    xTransfer(script, reqOpts)
+    Object.assign(script, reqOpts)
 	const el = await loadHTMLElement(script, url, timeout)
     if (!preload) {
         document.body.appendChild(el)
@@ -43,7 +41,7 @@ type IRequestImageOptions = HTMLImageElement & { timeout: number }
 export function requestImage(url: string, opts ?: IRequestImageOptions ): Promise<HTMLImageElement> {
     const { timeout, ...reqOpts } = opts || {} as IRequestImageOptions
     const image = new Image()
-    xTransfer(image, reqOpts)
+    Object.assign(image, reqOpts)
     return loadHTMLElement(image, url)
 }
 
@@ -52,7 +50,7 @@ export function requestFile(url: string, opts?: IRequestFileOptions) {
     const { timeout, ...reqOpts } = opts || {} as IRequestFileOptions
     return new Promise((resolve, reject) => {
         let xhr = new XMLHttpRequest();
-        xTransfer(xhr, reqOpts)
+        Object.assign(xhr, reqOpts)
         xhr.open('GET', url, true);
         xhr.onreadystatechange = function (data) {
             if (xhr.readyState === 4) {

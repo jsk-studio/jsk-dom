@@ -1,5 +1,3 @@
-import { xTransfer } from "@jsk-std/x"
-
 let uploader: HTMLInputElement | null = null
 
 export function getInputFile(opts?: HTMLInputElement) {
@@ -12,7 +10,7 @@ export function getInputFile(opts?: HTMLInputElement) {
         document.getElementById(id)?.remove()
         
         uploader = document.createElement('input')
-        xTransfer(uploader, opts)
+        Object.assign(uploader, opts)
         uploader.type = 'file'
         hiddenElement(uploader)
 
@@ -26,7 +24,7 @@ export function getInputFile(opts?: HTMLInputElement) {
 }
 
 function hiddenElement(el: HTMLElement) {
-    xTransfer(el.style, {
+    Object.assign(el.style, {
         opacity: '0',
         pointerEvents: 'none',
         position: 'absolute',
