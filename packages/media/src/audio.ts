@@ -43,11 +43,7 @@ async function getUrls(url: IPlayUrls) {
         return url
     }
     await preplayAudio()
-    const urls = url()
-    if (xTypeOf(urls, 'promise')) {
-        return await urls
-    }
-    return urls
+    return await url()
 }
 
 export async function playAudioUrl(url: IPlayUrls, opts ?: HTMLAudioElement) {
@@ -88,6 +84,7 @@ export function getAudioPlayer() {
     return audioPlayer
 }
 
+// LEGACY: 待移除 export api
 export function preplayAudio() {
     return new Promise((resolve) => {
         if (audioPlayer && !prepreload) {
@@ -100,14 +97,16 @@ export function preplayAudio() {
             audioPlayer.onabort = resolve
             prepreload = true
         }
-        resolve(1)
+        resolve(null)
     })
 }
 
-export type IPresetOptions = HTMLAudioElement & { autopause?: boolean }
+export type IPresetOptions = HTMLAudioElement & { 
+    visibleMode?: 'stop' | 'pause' | 'suspend'
+}
 
 export function presetAudioPlayer(options ?: IPresetOptions) {
-    const { autopause, ...opts } = options || {} as IPresetOptions
+    const { visibleMode, ...opts } = options || {} as IPresetOptions
     const id = opts.id || 'jsk-audio'
     audioPlayer = document.getElementById(id) as HTMLAudioElement
     if (audioPlayer) {
@@ -127,9 +126,18 @@ export function presetAudioPlayer(options ?: IPresetOptions) {
     ms.type = 'audio/mpeg'
     audioPlayer!.append(ms)
 
-    if (autopause) {
-         document.addEventListener('visibilitychange', () => {
-            audioPlayer?.stop!()
+    if (visibleMode) {
+        document.addEventListener('visibilitychange', () => {
+            if (visibleMode === 'stop') {
+                audioPlayer?.stop!()
+            } else if (visibleMode === 'pause') {
+                audioPlayer?.pause()
+            } else if (visibleMode == 'suspend') {
+                } if (document.visibilityState === 'visible') {
+                    audioPlayer?.play();
+                } else {
+                    audioPlayer?.pause();
+                }
         })
     }
 }
