@@ -1,29 +1,3 @@
-export async function fetchToObjectURL(url: string, opts?: RequestInit) {
-    const resp = await fetch(url, opts)
-    return URL.createObjectURL(resp.blob())
-}
-
-export async function fetchToImage(url: string, opts?: RequestInit) {
-    const imgUrl = await fetchToObjectURL(url, opts)
-    const image = new Image()
-    return await loadHTMLElement(image, imgUrl)
-}
-
-export async function fetchToJSON<T = any>(url: string, opts?: RequestInit) {
-    const resp = await fetch(url, opts)
-    return resp.json() as Promise<T>
-}
-
-export async function fetchToScript(url: string, opts?: RequestInit & { preload: boolean }) {
-    const { preload = false, ...reqOpts } = opts || {} as RequestInit & { preload: boolean }
-    const scriptUrl = await fetchToObjectURL(url, reqOpts)
-    const script = document.createElement('script');
-    const el = await loadHTMLElement(script, scriptUrl)
-    if (!preload) {
-        document.body.appendChild(el)
-    }
-    return el
-}
 
 type IRequestScriptOptions = HTMLScriptElement & { timeout: number, preload: boolean }
 export async function requestScript(url: string, opts ?: IRequestScriptOptions): Promise<HTMLScriptElement> {
@@ -53,13 +27,13 @@ export function requestFile(url: string, opts?: IRequestFileOptions) {
         Object.assign(xhr, reqOpts)
         xhr.open('GET', url, true);
         xhr.onreadystatechange = function (data) {
-            if (xhr.readyState === 4) {
-                if(xhr.status === 200){
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200){
                     resolve(data.currentTarget)
-                } else {
-                    console.log('Error json - XMLHttpRequest status: ' + xhr.status);
-                }
-            }
+                } else {
+                    console.log('Error json - XMLHttpRequest status: ' + xhr.status);
+                }
+            }
         };
         xhr.send();
         if (timeout) {
